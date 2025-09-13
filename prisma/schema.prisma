@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./prisma/dev.db"
+}
+
+model News {
+  id        Int      @id @default(autoincrement())
+  title     String
+  excerpt   String?
+  content   String
+  titleEn   String?
+  excerptEn String?
+  contentEn String?
+  slug      String   @unique
+  image     String?
+  published Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Post {
+  id        Int      @id @default(autoincrement())
+  title     String
+  excerpt   String?
+  content   String
+  titleEn   String?
+  excerptEn String?
+  contentEn String?
+  slug      String   @unique
+  image     String?
+  published Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ContactMessage {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String
+  subject   String?
+  message   String
+  createdAt DateTime @default(now())
+}
+
+model Video {
+  id        Int      @id @default(autoincrement())
+  platform  String
+  videoId   String
+  title     String
+  url       String?
+  published Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
