@@ -1,27 +1,66 @@
-# CryptoHub Next (Știri + Blog + Admin simplu)
+# CryptoHub Next.js
 
-**Stack**: Next.js 14 (App Router) + Tailwind + Prisma (SQLite) + Basic Auth
+Un site modern pentru știri și blog despre criptomonede, construit cu Next.js 14.
 
-## Setup (Windows)
-1. Dezarhivează.
-2. În folder:
-   ```bash
-   npm install
-   copy .env.example .env.local
-   # editează .env.local și setează:
-   # ADMIN_USER=admin
-   # ADMIN_PASS=parola_ta
-   npm run prisma:push
-   npm run dev
-   ```
-3. http://localhost:3000 → prima pagină este **/stiri**.
-4. http://localhost:3000/admin → prompt user/parolă (Basic Auth).
+## Caracteristici
 
-## Deploy
-- Orice hosting Node 18+ (ex. Hostinger/VPS).
-- Setează variabilele de mediu `ADMIN_USER`, `ADMIN_PASS`, `DATABASE_URL`.
-- Rulează `npm run prisma:push` pe server, apoi `npm run start`.
+- 📰 Știri și blog despre criptomonede
+- 🎥 Secțiune video cu embed-uri YouTube și TikTok
+- 💱 Informații despre burse de criptomonede
+- 🛍️ Catalog de produse
+- 🌐 Suport multilingv (Română/Engleză)
+- 📱 Design responsive
+- ⚡ Performanță optimizată cu Next.js
 
-## Note
-- Datele se salvează în `prisma/dev.db` (SQLite).
-- Admin simplu pentru adăugare știri/postări.
+## Tehnologii
+
+- **Framework**: Next.js 14 (App Router)
+- **Styling**: Tailwind CSS
+- **Database**: SQLite cu Prisma
+- **Deployment**: Vercel
+- **Icons**: Lucide React
+
+## Instalare
+
+1. Clonează repository-ul:
+```bash
+git clone https://github.com/vhh82/cryptohub-next.git
+cd cryptohub-next
+```
+
+2. Instalează dependențele:
+```bash
+npm install
+```
+
+3. Configurează baza de date:
+```bash
+npx prisma generate
+npx prisma db push
+```
+
+4. Pornește serverul de dezvoltare:
+```bash
+npm run dev
+```
+
+Site-ul va fi disponibil la [http://localhost:3000](http://localhost:3000).
+
+## Deployment
+
+Site-ul este deployat automat pe Vercel când se face push pe branch-ul `main`.
+
+## Structura proiectului
+
+```
+├── app/                 # App Router pages
+├── components/          # React components
+├── data/               # Static data files
+├── lib/                # Utility functions
+├── prisma/             # Database schema
+└── public/             # Static assets
+```
+
+## Contribuții
+
+Contribuțiile sunt binevenite! Te rugăm să deschizi un issue sau pull request.
