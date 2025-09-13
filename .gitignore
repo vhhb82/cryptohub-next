@@ -1,9 +1,24 @@
-node_modules
-.next
-out
+# Node / Next
+node_modules/
+.next/
+out/
+coverage/
+.DS_Store
+.vscode/
+
+# Env
 .env
 .env.local
-*.db*
-pnpm-lock.yaml
-yarn.lock
-package-lock.json
+.env.*.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Prisma (SQLite local)
+prisma/dev.db
+
+# Uploads (păstrăm doar folderul gol în repo)
+public/uploads/*
+!public/uploads/.gitkeep
