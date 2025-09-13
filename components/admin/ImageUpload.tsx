@@ -1,25 +1,63 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { uploadFile, getPublicUrl, deleteFile } from "@/lib/supabase";
+
 type Props = { name?: string; label?: string; defaultUrl?: string | null; onUploaded?: (url: string) => void; onRemoved?: () => void; };
+
 export default function ImageUpload({ name="image", label="Imagine (opțional)", defaultUrl=null, onUploaded, onRemoved }: Props){
   const [url, setUrl] = useState<string | null>(defaultUrl || null);
   const [busy, setBusy] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  
   useEffect(()=>{ setUrl(defaultUrl || null); }, [defaultUrl]);
+  
   async function onPick(e: React.ChangeEvent<HTMLInputElement>){
-    const file = e.target.files?.[0]; if(!file) return; setBusy(true);
+    const file = e.target.files?.[0]; 
+    if(!file) return; 
+    setBusy(true);
+    
     try{
-      const fd = new FormData(); fd.append("file", file);
-      const res = await fetch("/api/upload", { method: "POST", body: fd });
-      if(!res.ok) throw new Error("Upload failed");
-      const data = await res.json(); setUrl(data.url); onUploaded?.(data.url);
-    }catch(err){ alert("Nu am putut încărca imaginea."); console.error(err); }
-    finally{ setBusy(false); if(inputRef.current) inputRef.current.value = ""; }
+      // Generate unique filename
+      const timestamp = Date.now();
+      const filename = `${timestamp}-${file.name}`;
+      const path = `uploads/${filename}`;
+      
+      // Upload to Supabase Storage
+      await uploadFile(file, 'images', path);
+      
+      // Get public URL
+      const publicUrl = getPublicUrl('images', path);
+      setUrl(publicUrl); 
+      onUploaded?.(publicUrl);
+    }catch(err){ 
+      alert("Nu am putut încărca imaginea."); 
+      console.error(err); 
+    }
+    finally{ 
+      setBusy(false); 
+      if(inputRef.current) inputRef.current.value = ""; 
+    }
   }
+  
   async function remove(){
-    if(!url) return; setBusy(true);
-    try{ await fetch("/api/upload/delete", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url }) }); setUrl(null); onRemoved?.(); }
-    catch(err){ console.error(err); } finally{ setBusy(false); }
+    if(!url) return; 
+    setBusy(true);
+    
+    try{ 
+      // Extract path from URL for deletion
+      const urlParts = url.split('/');
+      const path = urlParts.slice(-2).join('/'); // Get 'uploads/filename'
+      
+      await deleteFile('images', path); 
+      setUrl(null); 
+      onRemoved?.(); 
+    }
+    catch(err){ 
+      console.error(err); 
+    } 
+    finally{ 
+      setBusy(false); 
+    }
   }
   return (
     <div className="space-y-2">
