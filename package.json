@@ -4,9 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build",
+    "build": "prisma generate && node scripts/migrate.js && next build",
     "start": "next start",
-    "prisma:push": "prisma db push"
+    "prisma:push": "prisma db push",
+    "postinstall": "prisma generate",
+    "migrate": "node scripts/migrate.js"
   },
   "dependencies": {
     "@prisma/client": "5.18.0",
