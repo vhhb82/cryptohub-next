@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 function mapPath(pathname: string, toEn: boolean) {
-  const maps: Array<[RegExp, (a?: string) => string]> = [
+  const maps: Array<[RegExp, (...args: string[]) => string]> = [
     [/^\/stiri(\/.*)?$/, (a) => `/en/news${a || ''}`],
     [/^\/blog(\/.*)?$/,  (a) => `/en/blog${a || ''}`],
     [/^\/despre(\/.*)?$/, (a) => `/en/about${a || ''}`],
@@ -21,7 +21,7 @@ function mapPath(pathname: string, toEn: boolean) {
   ]
   for (const [re, fn] of maps) {
     const m = pathname.match(re)
-    if (m) return fn(m[1] as any)
+    if (m) return fn(...m.slice(1))
   }
   // generic prefix/slice
   return toEn ? `/en${pathname === '/' ? '' : pathname}` : pathname.replace(/^\/en/, '') || '/'
