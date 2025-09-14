@@ -3,16 +3,22 @@ import { NextResponse } from "next/server";
 // Compatibil cu Vercel Edge Runtime
 export const runtime = "edge";
 
-const MAX_MB = 10;
+const MAX_MB = 5; // Redus pentru Vercel Edge Runtime
 
 // Helper function pentru Base64 encoding compatibil cu Edge Runtime
 function arrayBufferToBase64(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer);
-  let binary = '';
-  for (let i = 0; i < bytes.byteLength; i++) {
-    binary += String.fromCharCode(bytes[i]);
+  const chunks = [];
+  
+  // Procesează în chunks pentru a evita limitele Edge Runtime
+  const chunkSize = 8192;
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    const chunk = bytes.slice(i, i + chunkSize);
+    const binary = Array.from(chunk, byte => String.fromCharCode(byte)).join('');
+    chunks.push(binary);
   }
-  return btoa(binary);
+  
+  return btoa(chunks.join(''));
 }
 
 export async function POST(req: Request) {
@@ -34,7 +40,23 @@ export async function POST(req: Request) {
     // Verifică dimensiunea fișierului
     const sizeMB = file.size / (1024 * 1024);
     if (sizeMB > MAX_MB) {
-      return NextResponse.json({ error: "FILE_TOO_LARGE" }, { status: 413 });
+      return NextResponse.json({ 
+        error: "FILE_TOO_LARGE", 
+        message: `Fișierul este prea mare. Maxim ${MAX_MB}MB permis.` 
+      }, { status: 413 });
+    }
+
+    // Verifică tipul de fișier
+    const allowedTypes = [
+      'image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif', 
+      'image/svg+xml', 'image/svg'
+    ];
+    
+    if (!allowedTypes.includes(file.type) && !file.name.match(/\.(jpg|jpeg|png|webp|gif|svg)$/i)) {
+      return NextResponse.json({ 
+        error: "UNSUPPORTED_MEDIA_TYPE", 
+        message: "Tip de fișier nesuportat. Folosește JPG, PNG, WebP, GIF sau SVG." 
+      }, { status: 415 });
     }
 
     // Convert to Base64 - compatibil cu Vercel Edge Runtime
