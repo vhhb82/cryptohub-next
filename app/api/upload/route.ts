@@ -3,15 +3,23 @@ import { NextResponse } from "next/server";
 // Compatibil cu Vercel Edge Runtime
 export const runtime = "edge";
 
-const MAX_MB = 5; // Redus pentru Vercel Edge Runtime
+const MAX_MB = 2; // Foarte redus pentru Vercel Edge Runtime
+const MAX_BYTES = MAX_MB * 1024 * 1024;
 
 // Helper function pentru Base64 encoding compatibil cu Edge Runtime
 function arrayBufferToBase64(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer);
-  const chunks = [];
   
-  // Procesează în chunks pentru a evita limitele Edge Runtime
-  const chunkSize = 8192;
+  // Pentru fișiere foarte mici, folosește metoda simplă
+  if (bytes.length < 1024) {
+    const binary = Array.from(bytes, byte => String.fromCharCode(byte)).join('');
+    return btoa(binary);
+  }
+  
+  // Pentru fișiere mai mari, folosește chunks foarte mici
+  const chunks = [];
+  const chunkSize = 1024; // Chunks foarte mici pentru Edge Runtime
+  
   for (let i = 0; i < bytes.length; i += chunkSize) {
     const chunk = bytes.slice(i, i + chunkSize);
     const binary = Array.from(chunk, byte => String.fromCharCode(byte)).join('');
@@ -38,8 +46,7 @@ export async function POST(req: Request) {
     });
 
     // Verifică dimensiunea fișierului
-    const sizeMB = file.size / (1024 * 1024);
-    if (sizeMB > MAX_MB) {
+    if (file.size > MAX_BYTES) {
       return NextResponse.json({ 
         error: "FILE_TOO_LARGE", 
         message: `Fișierul este prea mare. Maxim ${MAX_MB}MB permis.` 
@@ -60,25 +67,42 @@ export async function POST(req: Request) {
     }
 
     // Convert to Base64 - compatibil cu Vercel Edge Runtime
-    const arrayBuffer = await file.arrayBuffer();
-    const base64 = arrayBufferToBase64(arrayBuffer);
-    const dataUrl = `data:${file.type || 'image/jpeg'};base64,${base64}`;
-    
-    console.log("Base64 upload success:", { 
-      name: file.name, 
-      type: file.type, 
-      size: file.size,
-      method: "base64",
-      environment: process.env.VERCEL ? "vercel" : "local"
-    });
-    
-    return NextResponse.json({ 
-      url: dataUrl, 
-      path: dataUrl,
-      method: "base64",
-      name: file.name,
-      type: file.type
-    });
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      
+      // Verifică din nou dimensiunea după arrayBuffer
+      if (arrayBuffer.byteLength > MAX_BYTES) {
+        return NextResponse.json({ 
+          error: "FILE_TOO_LARGE", 
+          message: `Fișierul este prea mare. Maxim ${MAX_MB}MB permis.` 
+        }, { status: 413 });
+      }
+      
+      const base64 = arrayBufferToBase64(arrayBuffer);
+      const dataUrl = `data:${file.type || 'image/jpeg'};base64,${base64}`;
+      
+      console.log("Base64 upload success:", { 
+        name: file.name, 
+        type: file.type, 
+        size: file.size,
+        method: "base64",
+        environment: process.env.VERCEL ? "vercel" : "local"
+      });
+      
+      return NextResponse.json({ 
+        url: dataUrl, 
+        path: dataUrl,
+        method: "base64",
+        name: file.name,
+        type: file.type
+      });
+    } catch (bufferError) {
+      console.error("Buffer processing error:", bufferError);
+      return NextResponse.json({ 
+        error: "BUFFER_PROCESSING_FAILED", 
+        message: "Eroare la procesarea fișierului. Încearcă cu o imagine mai mică." 
+      }, { status: 500 });
+    }
   } catch (error) {
     console.error("Upload error:", error);
     return NextResponse.json({ 
