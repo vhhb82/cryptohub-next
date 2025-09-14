@@ -1,11 +1,11 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { uploadFile, getPublicUrl, deleteFile } from "@/lib/supabase";
 
 type Props = { name?: string; label?: string; defaultUrl?: string | null; onUploaded?: (url: string) => void; onRemoved?: () => void; };
 
 export default function ImageUpload({ name="image", label="Imagine (opțional)", defaultUrl=null, onUploaded, onRemoved }: Props){
   const [url, setUrl] = useState<string | null>(defaultUrl || null);
+  const [path, setPath] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   
@@ -17,21 +17,46 @@ export default function ImageUpload({ name="image", label="Imagine (opțional)",
     setBusy(true);
     
     try{
-      // Generate unique filename
-      const timestamp = Date.now();
-      const filename = `${timestamp}-${file.name}`;
-      const path = `uploads/${filename}`;
+      // Create FormData for upload
+      const formData = new FormData();
+      formData.append('file', file);
       
-      // Upload to Supabase Storage
-      await uploadFile(file, 'images', path);
+      console.log("Uploading file:", { name: file.name, type: file.type, size: file.size });
       
-      // Get public URL
-      const publicUrl = getPublicUrl('images', path);
-      setUrl(publicUrl); 
-      onUploaded?.(publicUrl);
+      // Test if file is valid
+      if (!file.type || file.size === 0) {
+        throw new Error("Invalid file");
+      }
+      
+      // Upload to local API route
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      console.log("Upload response status:", response.status, response.statusText);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.log("Upload error response:", errorText);
+        let error;
+        try {
+          error = JSON.parse(errorText);
+        } catch {
+          error = { error: errorText };
+        }
+        throw new Error(error.error || 'Upload failed');
+      }
+      
+      const result = await response.json();
+      console.log("Upload success result:", result);
+      setUrl(result.url); 
+      setPath(result.path);
+      onUploaded?.(result.url);
     }catch(err){ 
-      alert("Nu am putut încărca imaginea."); 
-      console.error(err); 
+      console.error("Upload error details:", err);
+      const errorMessage = err instanceof Error ? err.message : "Upload failed";
+      alert(`Nu am putut încărca imaginea: ${errorMessage}`); 
     }
     finally{ 
       setBusy(false); 
@@ -44,13 +69,20 @@ export default function ImageUpload({ name="image", label="Imagine (opțional)",
     setBusy(true);
     
     try{ 
-      // Extract path from URL for deletion
-      const urlParts = url.split('/');
-      const path = urlParts.slice(-2).join('/'); // Get 'uploads/filename'
+      // Call delete API
+      const response = await fetch('/api/upload/delete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ url, path }),
+      });
       
-      await deleteFile('images', path); 
-      setUrl(null); 
-      onRemoved?.(); 
+      if (response.ok) {
+        setUrl(null); 
+        setPath(null);
+        onRemoved?.(); 
+      }
     }
     catch(err){ 
       console.error(err); 
@@ -73,8 +105,8 @@ export default function ImageUpload({ name="image", label="Imagine (opțional)",
         </div>
       ) : (
         <div className="card">
-          <input ref={inputRef} type="file" accept="image/*" onChange={onPick} disabled={busy} />
-          <p className="muted text-xs mt-1">Accept: JPG/PNG/WebP/GIF • max ~5–10MB recomandat</p>
+          <input ref={inputRef} type="file" accept="image/*,.svg" onChange={onPick} disabled={busy} />
+          <p className="muted text-xs mt-1">Accept: JPG/PNG/WebP/GIF/SVG • max ~5–10MB recomandat</p>
         </div>
       )}
     </div>
