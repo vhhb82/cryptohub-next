@@ -1,8 +1,7 @@
 "use client";
 
-import { UploadButton } from "@uploadthing/react";
+import { UploadButton } from "@/lib/uploadthing";
 import { useState } from "react";
-import type { OurFileRouter } from "@/lib/uploadthing";
 
 type Props = {
   name?: string;

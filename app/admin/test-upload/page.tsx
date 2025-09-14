@@ -1,6 +1,6 @@
 "use client";
 
-import UploadThingImageUpload from "@/components/admin/UploadThingImageUpload";
+import ImageUpload from "@/components/admin/ImageUpload";
 import { useState } from "react";
 
 export default function TestUploadPage() {
@@ -19,7 +19,7 @@ export default function TestUploadPage() {
 
   return (
     <div className="max-w-2xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">Test UploadThing</h1>
+      <h1 className="text-3xl font-bold mb-6">Test Upload Imagine</h1>
       
       {message && (
         <div className={`p-4 rounded mb-6 ${
@@ -32,7 +32,7 @@ export default function TestUploadPage() {
       <div className="space-y-6">
         <div>
           <h2 className="text-xl font-semibold mb-4">Test Upload Imagine</h2>
-          <UploadThingImageUpload
+          <ImageUpload
             name="test-image"
             label="Imagine de test"
             onUploaded={handleUploaded}

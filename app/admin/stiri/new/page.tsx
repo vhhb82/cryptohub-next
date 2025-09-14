@@ -1,6 +1,6 @@
 import { createNewsAction } from "@/app/admin/actions";
 import TranslateEnButton from "@/components/admin/TranslateEnButton";
-import UploadThingImageUpload from "@/components/admin/UploadThingImageUpload";
+import ImageUpload from "@/components/admin/ImageUpload";
 
 export const metadata = { title: "Admin • Adaugă știre" };
 
@@ -19,7 +19,7 @@ export default function NewNewsPage(){
           <div><label className="label">Slug</label><input name="slug" className="input" required /></div>
           <div><label className="label">Rezumat</label><textarea name="excerpt" className="input" rows={3} /></div>
           <div><label className="label">Conținut</label><textarea name="content" className="input" rows={8} /></div>
-          <UploadThingImageUpload name="image" label="Imagine (opțional)" />
+          <ImageUpload name="image" label="Imagine (opțional)" />
         </div>
 
         <div className="space-y-3">
