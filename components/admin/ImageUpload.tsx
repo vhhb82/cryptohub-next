@@ -50,6 +50,13 @@ export default function ImageUpload({ name="image", label="Imagine (opțional)",
       
       const result = await response.json();
       console.log("Upload success result:", result);
+      
+      // Check for warnings (like Supabase not configured)
+      if (result.warning) {
+        console.warn("Upload warning:", result.warning, result.message);
+        // Still proceed with the upload, but show a warning
+      }
+      
       setUrl(result.url); 
       setPath(result.path);
       onUploaded?.(result.url);

@@ -4,7 +4,11 @@ import path from "node:path";
 import sharp from "sharp";
 
 const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads");
-const ALLOWED = new Set(["image/jpeg","image/png","image/webp","image/gif","image/svg+xml"]);
+const ALLOWED = new Set([
+  "image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif",
+  "image/svg+xml", "image/svg", "application/xml", "text/xml",
+  "application/octet-stream", "text/plain"
+]);
 
 function sanitizeBase(name: string){
   return name.toLowerCase().replace(/[^a-z0-9._-]+/g, "-").replace(/-+/g, "-").replace(/^[-.]+|[-.]+$/g, "");
@@ -22,7 +26,7 @@ export async function saveImage(buf: Buffer, mime: string, origName: string){
   const fileBase = base.replace(/\.[a-z0-9]+$/i, "");
   
   // Handle SVG files differently - don't process with Sharp
-  if(mime === "image/svg+xml"){
+  if(mime === "image/svg+xml" || mime === "image/svg" || mime === "application/xml" || mime === "text/xml"){
     const fileName = `${fileBase}-${stamp}.svg`;
     const abs = path.join(UPLOAD_DIR, fileName);
     await fs.writeFile(abs, buf);

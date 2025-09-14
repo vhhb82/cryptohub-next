@@ -33,13 +33,37 @@ export async function POST(req: Request) {
   const isAllowedType = ALLOWED.includes(file.type);
   const isImageByExtension = /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(file.name);
   
+  // If file type is empty or unknown, try to determine from extension
+  let finalMimeType = file.type;
+  if (!finalMimeType || finalMimeType === "application/octet-stream") {
+    const ext = file.name.split('.').pop()?.toLowerCase();
+    switch (ext) {
+      case 'jpg':
+      case 'jpeg':
+        finalMimeType = 'image/jpeg';
+        break;
+      case 'png':
+        finalMimeType = 'image/png';
+        break;
+      case 'gif':
+        finalMimeType = 'image/gif';
+        break;
+      case 'webp':
+        finalMimeType = 'image/webp';
+        break;
+      case 'svg':
+        finalMimeType = 'image/svg+xml';
+        break;
+    }
+  }
+  
   if (!isAllowedType && !isImageByExtension) {
     console.log("Unsupported file type:", file.type, "for file:", file.name);
     return NextResponse.json({ error: "TYPE", received: file.type, allowed: ALLOWED }, { status: 415 });
   }
   
   if (!isAllowedType && isImageByExtension) {
-    console.log("File type not in allowed list but appears to be image by extension:", file.type, "for file:", file.name);
+    console.log("File type not in allowed list but appears to be image by extension:", file.type, "for file:", file.name, "using:", finalMimeType);
   }
   const sizeMB = (file.size / (1024 * 1024));
   if (sizeMB > MAX_MB) {
@@ -63,7 +87,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ 
       url: placeholderUrl, 
       path: placeholderUrl,
-      warning: "SUPABASE_NOT_CONFIGURED" 
+      warning: "SUPABASE_NOT_CONFIGURED",
+      message: "Please configure Supabase environment variables in Vercel"
     });
   }
 
@@ -114,7 +139,7 @@ export async function POST(req: Request) {
     try {
       const arrayBuffer = await file.arrayBuffer();
       const { saveImage } = await import("@/lib/uploads");
-      const url = await saveImage(Buffer.from(arrayBuffer), file.type, file.name);
+      const url = await saveImage(Buffer.from(arrayBuffer), finalMimeType, file.name);
       console.log("Local upload success:", { url });
       return NextResponse.json({ url, path: url });
     } catch (err: any) {
