@@ -36,10 +36,12 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
 ```
 
 ### **4. Îmbunătățiri Adiționale**
-- **Chunking pentru fișiere mari**: Procesează fișierele în chunks de 8KB pentru a evita limitele Edge Runtime
+- **Chunking optimizat pentru Edge Runtime**: Procesează fișierele în chunks de 1KB pentru a evita limitele de memorie
 - **Validare tipuri de fișiere**: Verifică atât MIME type cât și extensia fișierului
 - **Mesaje de eroare clare**: Returnează mesaje explicative pentru erorile 415 și 413
-- **Limită redusă**: 5MB în loc de 10MB pentru compatibilitate Vercel
+- **Limită foarte redusă**: 2MB pentru compatibilitate maximă cu Vercel Edge Runtime
+- **Error handling îmbunătățit**: Try-catch pentru procesarea buffer-ului
+- **Verificare dublă dimensiune**: Verifică dimensiunea înainte și după arrayBuffer
 
 ## 🚀 **TESTARE PE VERCEL:**
 
@@ -50,7 +52,7 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
 ### **2. Testează Upload-ul**
 1. Mergi la: `https://cryptohub-next.vercel.app/admin/test-upload`
 2. Apasă pe "Alege imaginea"
-3. Selectează o imagine (JPG, PNG, WebP, GIF, SVG)
+3. Selectează o imagine (JPG, PNG, WebP, GIF, SVG) - **max 2MB**
 4. Așteaptă să se încarce
 5. Verifică URL-ul generat
 
@@ -84,7 +86,8 @@ Base64 upload success: { name: 'demo.svg', type: 'image/svg+xml', size: 618, met
 
 ### **Erori Vercel (rezolvate)**
 - **POST 415**: "Unsupported Media Type" - rezolvat cu validare tipuri de fișiere
-- **POST 500**: "Internal Server Error" - rezolvat cu chunking pentru Edge Runtime
+- **POST 500**: "Internal Server Error" - rezolvat cu chunking optimizat și limită redusă la 2MB
+- **Memory issues**: Rezolvate cu chunks de 1KB și verificare dublă dimensiune
 
 ## ✅ **FUNCȚIONALITĂȚI COMPLETE:**
 
