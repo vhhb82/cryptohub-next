@@ -21,13 +21,25 @@ const base64 = Buffer.from(arrayBuffer).toString('base64');
 export const runtime = "edge";
 function arrayBufferToBase64(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer);
-  let binary = '';
-  for (let i = 0; i < bytes.byteLength; i++) {
-    binary += String.fromCharCode(bytes[i]);
+  const chunks = [];
+  
+  // Procesează în chunks pentru a evita limitele Edge Runtime
+  const chunkSize = 8192;
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    const chunk = bytes.slice(i, i + chunkSize);
+    const binary = Array.from(chunk, byte => String.fromCharCode(byte)).join('');
+    chunks.push(binary);
   }
-  return btoa(binary);
+  
+  return btoa(chunks.join(''));
 }
 ```
+
+### **4. Îmbunătățiri Adiționale**
+- **Chunking pentru fișiere mari**: Procesează fișierele în chunks de 8KB pentru a evita limitele Edge Runtime
+- **Validare tipuri de fișiere**: Verifică atât MIME type cât și extensia fișierului
+- **Mesaje de eroare clare**: Returnează mesaje explicative pentru erorile 415 și 413
+- **Limită redusă**: 5MB în loc de 10MB pentru compatibilitate Vercel
 
 ## 🚀 **TESTARE PE VERCEL:**
 
@@ -64,11 +76,15 @@ Upload request: { name: 'demo.svg', type: 'image/svg+xml', size: 618, environmen
 Base64 upload success: { name: 'demo.svg', type: 'image/svg+xml', size: 618, method: 'base64', environment: 'local' }
 ```
 
-### **Vercel (acum funcționează)**
+### **Vercel (acum funcționează cu chunking)**
 ```
 Upload request: { name: 'demo.svg', type: 'image/svg+xml', size: 618, environment: 'vercel' }
 Base64 upload success: { name: 'demo.svg', type: 'image/svg+xml', size: 618, method: 'base64', environment: 'vercel' }
 ```
+
+### **Erori Vercel (rezolvate)**
+- **POST 415**: "Unsupported Media Type" - rezolvat cu validare tipuri de fișiere
+- **POST 500**: "Internal Server Error" - rezolvat cu chunking pentru Edge Runtime
 
 ## ✅ **FUNCȚIONALITĂȚI COMPLETE:**
 
