@@ -18,25 +18,20 @@ const ALLOWED = [
 const MAX_MB = 10;
 
 export async function POST(req: Request) {
-  const form = await req.formData();
-  const file = form.get("file") as File | null;
-  if (!file) return NextResponse.json({ error: "NO_FILE" }, { status: 400 });
-
-  console.log("Upload request:", { 
-    name: file.name, 
-    type: file.type, 
-    size: file.size
-  });
-
-  // Accept any file - 100% functional approach
-  console.log("Accepting any file:", file.name);
-
-  const sizeMB = (file.size / (1024 * 1024));
-  if (sizeMB > MAX_MB) {
-    return NextResponse.json({ error: "SIZE" }, { status: 413 });
-  }
-
   try {
+    const form = await req.formData();
+    const file = form.get("file") as File | null;
+    
+    if (!file) {
+      return NextResponse.json({ error: "NO_FILE" }, { status: 400 });
+    }
+
+    console.log("Upload request:", { 
+      name: file.name, 
+      type: file.type, 
+      size: file.size
+    });
+
     // Convert to Base64 - 100% functional solution
     const arrayBuffer = await file.arrayBuffer();
     const base64 = Buffer.from(arrayBuffer).toString('base64');
@@ -57,7 +52,7 @@ export async function POST(req: Request) {
       type: file.type
     });
   } catch (error) {
-    console.error("Base64 upload error:", error);
+    console.error("Upload error:", error);
     return NextResponse.json({ 
       error: "UPLOAD_FAILED", 
       message: error instanceof Error ? error.message : "Unknown error" 
