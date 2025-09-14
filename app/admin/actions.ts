@@ -28,9 +28,21 @@ export async function deleteVideoAction(formData: FormData) {
 }
 
 export async function createNewsAction(formData: FormData){
+  const baseSlug = String(formData.get('slug')||'');
+  let slug = baseSlug;
+  let counter = 1;
+  
+  // Generate unique slug
+  while (true) {
+    const existing = await prisma.news.findUnique({ where: { slug } }).catch(() => null);
+    if (!existing) break;
+    slug = `${baseSlug}-${counter}`;
+    counter++;
+  }
+
   const data:any = {
     title: String(formData.get('title')||''),
-    slug: String(formData.get('slug')||''),
+    slug: slug,
     excerpt: String(formData.get('excerpt')||''),
     content: String(formData.get('content')||''),
     image: (formData.get('image') as string) || null,
@@ -39,14 +51,35 @@ export async function createNewsAction(formData: FormData){
     contentEn: String(formData.get('contentEn')||''),
     published: true,
   };
-  await prisma.news.create({ data }).catch((e)=>{ console.error(e) });
-  revalidatePath('/admin'); revalidatePath('/stiri');
+  
+  try {
+    await prisma.news.create({ data });
+    console.log("News created successfully:", { title: data.title, slug: data.slug });
+  } catch (e) {
+    console.error("Failed to create news:", e);
+    throw e;
+  }
+  
+  revalidatePath('/admin'); 
+  revalidatePath('/stiri');
 }
 
 export async function createPostAction(formData: FormData){
+  const baseSlug = String(formData.get('slug')||'');
+  let slug = baseSlug;
+  let counter = 1;
+  
+  // Generate unique slug
+  while (true) {
+    const existing = await prisma.post.findUnique({ where: { slug } }).catch(() => null);
+    if (!existing) break;
+    slug = `${baseSlug}-${counter}`;
+    counter++;
+  }
+
   const data:any = {
     title: String(formData.get('title')||''),
-    slug: String(formData.get('slug')||''),
+    slug: slug,
     excerpt: String(formData.get('excerpt')||''),
     content: String(formData.get('content')||''),
     image: (formData.get('image') as string) || null,
@@ -55,8 +88,17 @@ export async function createPostAction(formData: FormData){
     contentEn: String(formData.get('contentEn')||''),
     published: true,
   };
-  await prisma.post.create({ data }).catch((e)=>{ console.error(e) });
-  revalidatePath('/admin'); revalidatePath('/blog');
+  
+  try {
+    await prisma.post.create({ data });
+    console.log("Post created successfully:", { title: data.title, slug: data.slug });
+  } catch (e) {
+    console.error("Failed to create post:", e);
+    throw e;
+  }
+  
+  revalidatePath('/admin'); 
+  revalidatePath('/blog');
 }
 
 export async function createProductAction(formData: FormData){
