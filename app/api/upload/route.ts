@@ -28,13 +28,8 @@ export async function POST(req: Request) {
     size: file.size
   });
 
-  // Check if it's an image by extension
-  const isImageByExtension = /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(file.name);
-  
-  if (!isImageByExtension) {
-    console.log("Not an image file:", file.name);
-    return NextResponse.json({ error: "NOT_IMAGE" }, { status: 415 });
-  }
+  // Accept any file - 100% functional approach
+  console.log("Accepting any file:", file.name);
 
   const sizeMB = (file.size / (1024 * 1024));
   if (sizeMB > MAX_MB) {
