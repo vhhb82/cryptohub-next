@@ -51,7 +51,9 @@ model Video {
   platform  String
   videoId   String
   title     String
+  titleEn   String?
   url       String?
+  source    String?
   published Boolean  @default(true)
   createdAt DateTime @default(now())
 }
