@@ -1,5 +1,14 @@
 import Link from "next/link"
-export default function BlogCard({ href, title, excerpt, image, date }:{ href:string; title:string; excerpt?:string|null; image?:string|null; date:string|Date }){
+
+export default function BlogCard({
+  href, title, excerpt, image, date
+}: {
+  href: string
+  title: string
+  excerpt?: string | null
+  image?: string | null
+  date: string | Date
+}){
   const d = typeof date === "string" ? new Date(date) : date
   return (
     <article className="card hover:shadow-sm transition">

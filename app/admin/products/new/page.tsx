@@ -1,6 +1,6 @@
 import { createProductAction } from "@/app/admin/actions";
 import TranslateEnButton from "@/components/admin/TranslateEnButton";
-import ImageUpload from "@/components/admin/ImageUpload";
+import ImageUploader from "@/components/ImageUploader";
 
 export const metadata = { title: "Admin • Adaugă produs" };
 
@@ -15,7 +15,7 @@ export default function NewProductPage(){
           <div><label className="label">Bullets (RO) — câte o linie</label><textarea name="bullets" className="input" rows={6} placeholder="• funcție A
 • funcție B" /></div>
           <div><label className="label">Link / CTA URL</label><input name="href" className="input" placeholder="https://..." /></div>
-          <ImageUpload name="image" label="Imagine (opțional)" />
+          <ImageUploader fieldName="image" label="Imagine (opțional)" />
         </div>
         <div className="space-y-3">
           <div className="flex items-center justify-between"><h2 className="font-semibold">English</h2><TranslateEnButton /></div>

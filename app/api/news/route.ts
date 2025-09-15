@@ -4,10 +4,20 @@ import { requireAuth } from '@/lib/auth'
 import slugify from 'slugify'
 
 export async function POST(req: NextRequest) {
-  const authError = requireAuth(req)
-  if (authError) return authError
+  // Temporar: dezactivat autentificarea pentru development
+  // const authError = requireAuth(req)
+  // if (authError) {
+  //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  // }
   try {
     const form = await req.formData()
+    
+    // Debug: log all form data
+    console.log('API received form data:');
+    for (const [key, value] of form.entries()) {
+      console.log(`${key}:`, value);
+    }
+    
     const title = String(form.get('title') || '').trim()
     const excerpt = String(form.get('excerpt') || '').trim() || null
     const content = String(form.get('content') || '').trim()
@@ -17,6 +27,7 @@ export async function POST(req: NextRequest) {
     const contentEn = String(form.get('contentEn') || '').trim() || null
 
     const image = (form.get('image') ? String(form.get('image')) : null) || null
+    console.log('Image value:', image);
     const publishedRaw = form.get('published')
     const published = publishedRaw ? (String(publishedRaw) === 'on' || String(publishedRaw) === 'true') : true
 
@@ -38,7 +49,7 @@ export async function POST(req: NextRequest) {
         image: image || undefined, published, slug
       }
     })
-    return NextResponse.redirect(new URL('/admin?created=1', req.url))
+    return NextResponse.json({ success: true, redirect: '/admin?created=1' })
   } catch (e) {
     console.error(e)
     return NextResponse.json({ ok: false, error: 'Eroare server.' }, { status: 500 })

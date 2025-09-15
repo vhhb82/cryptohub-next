@@ -13,8 +13,7 @@ export function requireAuth(req: NextRequest): Response | null {
     return new Response('Unauthorized', { 
       status: 401,
       headers: {
-        'Content-Type': 'text/plain',
-        'WWW-Authenticate': 'Basic realm="Admin Area"'
+        'Content-Type': 'application/json'
       }
     })
   }

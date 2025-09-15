@@ -1,5 +1,5 @@
 import AutoTranslateEn from '@/components/AutoTranslateEn'
-import ImageUpload from "@/components/admin/ImageUpload";
+import ImageUploader from "@/components/ImageUploader";
 
 export default function NewNews() {
   return (
@@ -10,7 +10,7 @@ export default function NewNews() {
           <h2 className="text-lg font-semibold">Română</h2>
           <div><label className="label">Titlu</label><input className="input" name="title" required placeholder="Titlul știrii" /></div>
           <div><label className="label">Rezumat (opțional)</label><input className="input" name="excerpt" placeholder="1-2 fraze..." /></div>
-          <div><label className="label">URL imagine (opțional)</label><ImageUpload name="image" label="Imagine (opțional)" /></div>
+          <div><label className="label">URL imagine (opțional)</label><ImageUploader fieldName="image" label="Imagine (opțional)" /></div>
           <div><label className="label">Conținut</label><textarea className="input" name="content" required rows={10} placeholder="Textul complet..." /></div>
         </section>
 

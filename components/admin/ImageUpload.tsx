@@ -1,11 +1,11 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { cloudinaryConfig } from "@/lib/cloudinary";
 
 type Props = { name?: string; label?: string; defaultUrl?: string | null; onUploaded?: (url: string) => void; onRemoved?: () => void; };
 
 export default function ImageUpload({ name="image", label="Imagine (opțional)", defaultUrl=null, onUploaded, onRemoved }: Props){
   const [url, setUrl] = useState<string | null>(defaultUrl || null);
-  const [path, setPath] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   
@@ -17,51 +17,46 @@ export default function ImageUpload({ name="image", label="Imagine (opțional)",
     setBusy(true);
     
     try{
-      // Create FormData for upload
-      const formData = new FormData();
-      formData.append('file', file);
-      
-      console.log("Uploading file:", { name: file.name, type: file.type, size: file.size });
+      console.log("Uploading file to Cloudinary:", { name: file.name, type: file.type, size: file.size });
       
       // Test if file is valid
       if (!file.type || file.size === 0) {
         throw new Error("Invalid file");
       }
       
-      // Upload to local API route
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
+      // Check if Cloudinary is configured
+      if (!cloudinaryConfig.cloudName || !cloudinaryConfig.uploadPreset) {
+        throw new Error("Cloudinary nu este configurat. Verifică variabilele de mediu NEXT_PUBLIC_CLOUDINARY_*");
+      }
       
-      console.log("Upload response status:", response.status, response.statusText);
+      // Upload directly to Cloudinary
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', cloudinaryConfig.uploadPreset);
+      
+      const response = await fetch(
+        `https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/image/upload`,
+        {
+          method: 'POST',
+          body: formData,
+        }
+      );
+      
+      console.log("Cloudinary upload response status:", response.status, response.statusText);
       
       if (!response.ok) {
         const errorText = await response.text();
-        console.log("Upload error response:", errorText);
-        let error;
-        try {
-          error = JSON.parse(errorText);
-        } catch {
-          error = { error: errorText };
-        }
-        throw new Error(error.error || 'Upload failed');
+        console.log("Cloudinary upload error response:", errorText);
+        throw new Error(`Cloudinary upload failed: ${response.status} ${response.statusText}`);
       }
       
       const result = await response.json();
-      console.log("Upload success result:", result);
+      console.log("Cloudinary upload success result:", result);
       
-      // Check for warnings (like Supabase not configured)
-      if (result.warning) {
-        console.warn("Upload warning:", result.warning, result.message);
-        // Still proceed with the upload, but show a warning
-      }
-      
-      setUrl(result.url); 
-      setPath(result.path);
-      onUploaded?.(result.url);
+      setUrl(result.secure_url); 
+      onUploaded?.(result.secure_url);
     }catch(err){ 
-      console.error("Upload error details:", err);
+      console.error("Cloudinary upload error details:", err);
       const errorMessage = err instanceof Error ? err.message : "Upload failed";
       alert(`Nu am putut încărca imaginea: ${errorMessage}`); 
     }
@@ -76,19 +71,30 @@ export default function ImageUpload({ name="image", label="Imagine (opțional)",
     setBusy(true);
     
     try{ 
-      // Call delete API
-      const response = await fetch('/api/upload/delete', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ url, path }),
-      });
-      
-      if (response.ok) {
-        setUrl(null); 
-        setPath(null);
-        onRemoved?.(); 
+      // Extract public_id from Cloudinary URL
+      const publicIdMatch = url.match(/\/upload\/(?:v\d+\/)?(.+?)(?:\.[^.]+)?$/);
+      if (publicIdMatch) {
+        const publicId = publicIdMatch[1];
+        
+        // Call Cloudinary delete API
+        const response = await fetch('/api/cloudinary', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ action: 'delete', publicId }),
+        });
+        
+        if (response.ok) {
+          setUrl(null); 
+          onRemoved?.(); 
+        } else {
+          console.error("Failed to delete from Cloudinary");
+        }
+      } else {
+        // If not a Cloudinary URL, just remove from state
+        setUrl(null);
+        onRemoved?.();
       }
     }
     catch(err){ 

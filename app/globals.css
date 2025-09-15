@@ -1,14 +1,168 @@
-@tailwind base; @tailwind components; @tailwind utilities;
-/* Paper Blue */
-:root{ --bg:248 250 252; --fg:15 23 42; --muted:71 85 105; --card:255 255 255; --border:226 232 240; --accent:37 99 235; --accent-50:239 246 255; }
-html,body{height:100%} body{ @apply antialiased; color:rgb(var(--fg)); background:rgb(var(--bg)); }
-.container{ @apply mx-auto px-4; max-width:72rem; }
-@layer components{
-  .card{ @apply rounded-xl border bg-white p-4 transition; border-color:rgb(var(--border)); }
-  .card:hover{ @apply shadow-sm; }
-  .btn-primary{ @apply inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white; background:rgb(var(--accent)); }
-  .btn-ghost{ @apply inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm; border-color:rgb(var(--border)); background:white; color:rgb(var(--fg)); }
-  .badge{ @apply inline-flex items-center rounded-full border px-2 py-0.5 text-xs; border-color:rgb(var(--border)); background:rgb(var(--accent-50)); color:rgb(var(--accent)); }
-  .muted{ color:rgb(var(--muted)); }
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===== CryptoHub Blue Theme ===== */
+:root{
+  --bg: 255 255 255; /* white */
+  --fg: 15 23 42;    /* slate-900 */
+  --muted: 71 85 105; /* slate-600 */
+  --card: 255 255 255;
+  --border: 226 232 240; /* slate-200 */
+  --accent: 37 99 235; /* blue-600 */
+  --accent-50: 239 246 255; /* blue-50 */
+  --accent-100: 219 234 254; /* blue-100 */
+  --accent-600: 37 99 235; /* blue-600 */
+  --accent-700: 29 78 216; /* blue-700 */
 }
-.tradingview-ticker{ @apply border-b; border-color:rgb(var(--border)); }
+
+html, body { height: 100%; }
+
+body{
+  @apply antialiased;
+  color: rgb(var(--fg));
+  background-color: rgb(var(--bg));
+}
+
+/* Container */
+.container{
+  @apply mx-auto px-4;
+  max-width: 72rem;
+}
+
+/* Reusable UI */
+@layer components{
+  .btn{
+    @apply inline-flex items-center gap-2 rounded-full border px-6 py-3 text-sm font-medium transition;
+    border-color: rgb(var(--border));
+    background: white;
+  }
+  .btn:hover{ @apply shadow-lg; }
+
+  .btn-primary{
+    @apply text-white rounded-full;
+    background: linear-gradient(135deg, rgb(var(--accent-600)) 0%, rgb(var(--accent-700)) 100%);
+    border-color: rgb(var(--accent-700));
+    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3);
+  }
+  .btn-primary:hover{ 
+    filter: brightness(1.1);
+    box-shadow: 0 8px 25px -5px rgba(37, 99, 235, 0.4);
+    transform: translateY(-1px);
+  }
+
+  .input{
+    @apply w-full rounded-full border px-4 py-3;
+    border-color: rgb(var(--accent-100));
+    background: rgb(var(--card));
+    transition: all 0.3s ease;
+  }
+  .input:focus {
+    border-color: rgb(var(--accent-600));
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    outline: none;
+  }
+
+  .label{ @apply block mb-1 text-sm font-medium text-slate-700; }
+
+  .card{
+    @apply rounded-3xl border p-6 bg-white;
+    border-color: rgb(var(--accent-100));
+    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.1);
+  }
+
+  .badge{
+    @apply inline-flex items-center rounded-full border px-3 py-1 text-xs;
+    border-color: rgb(var(--accent-200));
+    background: linear-gradient(135deg, rgb(var(--accent-50)) 0%, rgb(var(--accent-100)) 100%);
+    color: rgb(var(--accent-700));
+    font-weight: 500;
+  }
+
+  .muted{ color: rgb(var(--muted)); }
+  
+  /* Links */
+  a {
+    color: rgb(var(--accent-600));
+    transition: all 0.3s ease;
+  }
+  a:hover {
+    color: rgb(var(--accent-700));
+    text-decoration: underline;
+  }
+}
+
+/* Header + ticker spacing */
+header{ 
+  position: sticky; 
+  top: 0; 
+  z-index: 40; 
+  background: linear-gradient(135deg, rgb(var(--accent-600)) 0%, rgb(var(--accent-700)) 100%);
+  border-bottom: 3px solid rgb(var(--accent-700));
+}
+
+/* TradingView ticker holder (thin, with divider) */
+.tradingview-ticker { 
+  @apply border-b; 
+  border-color: rgb(var(--accent-100));
+  background: rgb(var(--accent-50));
+}
+
+/* Logo styling */
+.logo {
+  filter: brightness(0) invert(1);
+  transition: all 0.3s ease;
+}
+
+.logo:hover {
+  filter: brightness(0) invert(1) drop-shadow(0 0 8px rgba(255,255,255,0.5));
+}
+
+/* Navigation links in header */
+header a {
+  color: white !important;
+  transition: all 0.3s ease;
+}
+
+header a:hover {
+  color: rgb(var(--accent-100)) !important;
+  text-shadow: 0 0 8px rgba(255,255,255,0.3);
+}
+
+/* Force white text in header */
+header * {
+  color: white !important;
+}
+
+header .text-slate-700,
+header .text-gray-700,
+header .text-gray-900,
+header .text-black {
+  color: white !important;
+}
+
+/* Main content with blue accents */
+main {
+  background: linear-gradient(180deg, rgb(var(--accent-50)) 0%, white 100%);
+  min-height: calc(100vh - 200px);
+  padding: 2rem 0;
+}
+
+/* Container with better spacing */
+.container {
+  @apply mx-auto px-6;
+  max-width: 80rem;
+}
+
+/* Cards with blue borders */
+.card{
+  @apply rounded-3xl border p-6 bg-white;
+  border-color: rgb(var(--accent-100));
+  box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.1);
+}
+
+.card:hover {
+  border-color: rgb(var(--accent-600));
+  box-shadow: 0 8px 25px -5px rgba(37, 99, 235, 0.2);
+  transform: translateY(-2px);
+}

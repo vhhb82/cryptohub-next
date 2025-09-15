@@ -1,0 +1,152 @@
+diff --git a/.env.example b/.env.example
+index 1111111..2222222 100644
+--- a/.env.example
++++ b/.env.example
+@@
+ # Database etc...
+ 
++## Cloudinary (public) — used for UNSIGNED uploads from the browser
++# Înlocuiește valorile cu ale tale (le poți lăsa goale aici, dar adaugă-le la Vercel).
++NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=dopyxebpu
++NEXT_PUBLIC_CLOUDINARY_PRESET=cryptohub_unsigned
++
+diff --git a/components/ImageUploader.tsx b/components/ImageUploader.tsx
+new file mode 100644
+index 0000000..3333333
+--- /dev/null
++++ b/components/ImageUploader.tsx
+@@
++\"use client\";
++
++import { useMemo, useState } from \"react\";
++
++type Props = {
++  /** Numele câmpului hidden care va ajunge în formular */
++  fieldName?: string;
++  /** callback opțional dacă vrei să primești URL-ul în părinte */
++  onUploaded?: (url: string) => void;
++  /** mărime maximă (MB) */
++  maxSizeMB?: number;
++  className?: string;
++};
++
++export default function ImageUploader({
++  fieldName = \"imageUrl\",
++  onUploaded,
++  maxSizeMB = 8,
++  className,
++}: Props) {
++  const [preview, setPreview] = useState<string | null>(null);
++  const [url, setUrl] = useState<string>(\"\");
++  const [status, setStatus] = useState<\"idle\" | \"uploading\" | \"done\" | \"error\">(\"idle\");
++  const [error, setError] = useState<string | null>(null);
++
++  const cloud = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
++  const preset = process.env.NEXT_PUBLIC_CLOUDINARY_PRESET;
++  const canUpload = useMemo(() => Boolean(cloud && preset), [cloud, preset]);
++
++  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
++    const file = e.target.files?.[0];
++    if (!file) return;
++    setError(null);
++
++    if (!file.type.startsWith(\"image/\")) {
++      setError(\"Selectează o imagine (JPG/PNG/WebP).\");
++      return;
++    }
++    if (file.size > maxSizeMB * 1024 * 1024) {
++      setError(`Fișierul e prea mare (> ${maxSizeMB}MB).`);
++      return;
++    }
++    if (!canUpload) {
++      setError(\"Configul Cloudinary lipsește (NEXT_PUBLIC_CLOUDINARY_*).\");
++      return;
++    }
++
++    setStatus(\"uploading\");
++    setPreview(URL.createObjectURL(file));
++
++    try {
++      const fd = new FormData();
++      fd.append(\"file\", file);
++      fd.append(\"upload_preset\", preset!); // UNSIGNED upload
++
++      const res = await fetch(
++        `https://api.cloudinary.com/v1_1/${cloud}/image/upload`,
++        { method: \"POST\", body: fd } // NU seta Content-Type manual!
++      );
++
++      if (!res.ok) {
++        const txt = await res.text().catch(() => \"\");
++        throw new Error(`Upload eșuat (${res.status}). ${txt}`);
++      }
++
++      const data = await res.json();
++      const secureUrl: string = data.secure_url;
++      setUrl(secureUrl);
++      setStatus(\"done\");
++      onUploaded?.(secureUrl);
++    } catch (err: any) {
++      setStatus(\"error\");
++      setError(err?.message ?? \"Upload eșuat.\");
++    }
++  }
++
++  return (
++    <div className={className}>
++      <label className=\"block text-sm font-medium mb-2\">Imagine (opțional)</label>
++
++      <input
++        type=\"file\"
++        accept=\"image/*\"
++        onChange={handleFileChange}
++        className=\"block w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg
++                   file:border-0 file:text-sm file:font-semibold file:bg-indigo-50
++                   file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer\"
++      />
++
++      {/* Hidden input care ajunge în formular */}
++      <input type=\"hidden\" name={fieldName} value={url} />
++
++      {preview && (
++        <div className=\"mt-3\">
++          <img
++            src={preview}
++            alt=\"preview\"
++            className=\"h-36 w-auto rounded-lg border border-gray-200 object-cover\"
++          />
++        </div>
++      )}
++
++      <div className=\"mt-2 text-xs text-gray-500\">
++        {status === \"uploading\" && \"Se încarcă…\"}
++        {status === \"done\" && url && (
++          <span className=\"text-green-600\">Încărcat. URL salvat în formular.</span>
++        )}
++        {status === \"error\" && error && <span className=\"text-red-600\">{error}</span>}
++      </div>
++    </div>
++  );
++}
++
+diff --git a/app/admin/stiri/new/page.tsx b/app/admin/stiri/new/page.tsx
+index 4444444..5555555 100644
+--- a/app/admin/stiri/new/page.tsx
++++ b/app/admin/stiri/new/page.tsx
+@@
+-import React from \"react\";
++import React from \"react\";
++import ImageUploader from \"@/components/ImageUploader\";
+@@
+-      {/* Imagine (optional) – versiunea veche: input type=\"file\" pe server + /api/upload */}
+-      {/* <input type=\"file\" name=\"image\" accept=\"image/*\" /> */}
+-      {/* ... */}
++      {/* Imagine (opțional) – nou: upload direct în Cloudinary (unsigned) */}
++      <ImageUploader fieldName=\"imageUrl\" />
++
++      {/* IMPORTANT:
++          - În handlerul de 'Publică știrea', citește din formData.get('imageUrl')
++            și salvează acel URL în DB. Nu mai trimitem fișierul la server.
++       */}
+@@
+       <button type=\"submit\" className=\"btn btn-primary\">Publică știrea</button>

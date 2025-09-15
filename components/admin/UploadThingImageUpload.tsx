@@ -1,7 +1,7 @@
 "use client";
 
-import { UploadButton } from "@/lib/uploadthing";
 import { useState } from "react";
+import ImageUploader from "@/components/ImageUploader";
 
 type Props = {
   name?: string;
@@ -19,21 +19,10 @@ export default function UploadThingImageUpload({
   onRemoved,
 }: Props) {
   const [url, setUrl] = useState<string | null>(defaultUrl || null);
-  const [isUploading, setIsUploading] = useState(false);
 
-  const handleUploadComplete = (res: any) => {
-    console.log("Upload complete:", res);
-    if (res && res[0] && res[0].url) {
-      setUrl(res[0].url);
-      onUploaded?.(res[0].url);
-    }
-    setIsUploading(false);
-  };
-
-  const handleUploadError = (error: Error) => {
-    console.error("Upload error:", error);
-    alert(`Eroare la upload: ${error.message}`);
-    setIsUploading(false);
+  const handleUploaded = (newUrl: string) => {
+    setUrl(newUrl);
+    onUploaded?.(newUrl);
   };
 
   const handleRemove = () => {
@@ -43,8 +32,6 @@ export default function UploadThingImageUpload({
 
   return (
     <div className="space-y-2">
-      <label className="label">{label}</label>
-      
       {url ? (
         <div className="card flex items-center gap-3">
           <img 
@@ -65,24 +52,12 @@ export default function UploadThingImageUpload({
           <input type="hidden" name={name} value={url} />
         </div>
       ) : (
-        <div className="card">
-          <UploadButton
-            endpoint="imageUploader"
-            onClientUploadComplete={handleUploadComplete}
-            onUploadError={handleUploadError}
-            onUploadBegin={() => setIsUploading(true)}
-            appearance={{
-              button: "ut-ready:bg-blue-500 ut-uploading:cursor-not-allowed rounded-r-none bg-blue-500 text-white hover:bg-blue-600",
-              allowedContent: "hidden",
-            }}
-            content={{
-              button: isUploading ? "Se încarcă..." : "Alege imaginea",
-            }}
-          />
-          <p className="muted text-xs mt-1">
-            Accept: JPG/PNG/WebP/GIF • max 4MB
-          </p>
-        </div>
+        <ImageUploader
+          fieldName={name}
+          label={label}
+          onUploaded={handleUploaded}
+          maxSizeMB={4}
+        />
       )}
     </div>
   );

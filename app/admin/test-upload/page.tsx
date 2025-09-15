@@ -1,6 +1,6 @@
 "use client";
 
-import ImageUpload from "@/components/admin/ImageUpload";
+import ImageUploader from "@/components/ImageUploader";
 import { useState } from "react";
 
 export default function TestUploadPage() {
@@ -32,11 +32,10 @@ export default function TestUploadPage() {
       <div className="space-y-6">
         <div>
           <h2 className="text-xl font-semibold mb-4">Test Upload Imagine</h2>
-          <ImageUpload
-            name="test-image"
+          <ImageUploader
+            fieldName="test-image"
             label="Imagine de test"
             onUploaded={handleUploaded}
-            onRemoved={handleRemoved}
           />
         </div>
 

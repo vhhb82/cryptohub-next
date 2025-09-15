@@ -5,19 +5,13 @@ import { Inter, Sora } from "next/font/google"
 import TradingViewTicker from "@/components/TradingViewTicker"
 import LangSwitcher from "@/components/LangSwitcher"
 import HeaderNav from "@/components/HeaderNav"
-import Image from "next/image"
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" })
 const sora = Sora({ subsets: ["latin"], variable: "--font-sora" })
 
 export const metadata: Metadata = {
-  title: "CryptoHub — Stiri si Blog",
+  title: "CryptoHub • Știri & Blog",
   description: "Homepage pe Știri + Blog + Admin simplu",
-  icons: {
-    icon: "/favicon.svg",
-    shortcut: "/favicon.svg",
-    apple: "/apple-touch-icon.png",
-  },
 }
 
 function TradingViewMark() {
@@ -33,41 +27,44 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ro" className={`${inter.variable} ${sora.variable}`}>
       <body className="font-sans">
-        <div className="min-h-screen flex">
-          {/* Left blue sidebar */}
-          <div className="w-16 bg-gradient-to-br from-blue-500 to-blue-900 hidden lg:block"></div>
-          
-          {/* Main content area */}
-          <div className="flex-1 flex flex-col">
-            <header className="border-b bg-white">
-              <div className="container py-4 flex items-center gap-6">
-                <Link href="/" className="flex items-center gap-2">
-                  <Image
-                    src="/brand/cryptohub-mark.svg"
-                    alt="CryptoHub Logo"
-                    width={32}
-                    height={32}
-                    priority
-                  />
-                  <span className="text-2xl font-semibold" style={{fontFamily: "var(--font-sora)"}}>
-                    CryptoHub
-                  </span>
-                </Link>
-                <HeaderNav />
-                <span className="ml-auto"><LangSwitcher /></span>
-              </div>
-            </header>
-            <div className="tradingview-ticker"><TradingViewTicker /></div>
-            <main className="container py-8 flex-1">{children}</main>
-            <footer className="container py-10 text-sm opacity-70 flex flex-col sm:flex-row items-center justify-between gap-3">
-              <div>© {new Date().getFullYear()} CryptoHub</div>
-              <a href={affiliate} target="_blank" rel="noopener" className="inline-flex items-center gap-2"><TradingViewMark /><span>Powered by TradingView</span></a>
-            </footer>
+        <header>
+          <div className="container py-4 flex items-center gap-6">
+            <Link href="/" className="flex items-center gap-3">
+              <img 
+                src="/brand/cryptohub-logo.svg" 
+                alt="CryptoHub" 
+                className="logo h-8 w-8"
+              />
+              <span className="text-2xl font-semibold" style={{fontFamily: "var(--font-sora)"}}>
+                CryptoHub
+              </span>
+            </Link>
+            <HeaderNav />
+            <span className="ml-auto"><LangSwitcher /></span>
           </div>
-          
-          {/* Right blue sidebar */}
-          <div className="w-16 bg-gradient-to-br from-blue-500 to-blue-900 hidden lg:block"></div>
+        </header>
+
+        <div className="tradingview-ticker">
+          <TradingViewTicker />
         </div>
+
+        <main className="container py-8">{children}</main>
+        <footer className="bg-gradient-to-r from-blue-600 to-blue-700 text-white py-10">
+          <div className="container flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <img 
+                src="/brand/cryptohub-logo.svg" 
+                alt="CryptoHub" 
+                className="logo h-6 w-6"
+              />
+              <span>© {new Date().getFullYear()} CryptoHub</span>
+            </div>
+            <a href={affiliate} target="_blank" rel="noopener" className="inline-flex items-center gap-2 hover:text-blue-100 transition-colors">
+              <TradingViewMark />
+              <span>Powered by TradingView</span>
+            </a>
+          </div>
+        </footer>
       </body>
     </html>
   )

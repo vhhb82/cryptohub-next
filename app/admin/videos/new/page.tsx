@@ -1,4 +1,3 @@
-import ImageUpload from "@/components/admin/ImageUpload";
 export const metadata = { title: 'Adaugă Video • Admin' }
 
 export default function NewVideo() {

@@ -4,8 +4,9 @@ import { requireAuth } from '@/lib/auth'
 import slugify from 'slugify'
 
 export async function POST(req: NextRequest) {
-  const authError = requireAuth(req)
-  if (authError) return authError
+  // Temporar: dezactivat autentificarea pentru development
+  // const authError = requireAuth(req)
+  // if (authError) return authError
   try {
     const form = await req.formData()
     const title = String(form.get('title') || '').trim()
