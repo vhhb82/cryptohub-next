@@ -22,5 +22,6 @@
       "DATABASE_URL": "@database_url",
       "ADMIN_SECRET": "@admin_secret"
     }
-  }
+  },
+  "version": 2
 }
