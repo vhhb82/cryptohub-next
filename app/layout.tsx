@@ -6,6 +6,8 @@ import TradingViewTicker from "@/components/TradingViewTicker"
 import LangSwitcher from "@/components/LangSwitcher"
 import HeaderNav from "@/components/HeaderNav"
 
+// Force rebuild to clear /api/upload cache
+
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" })
 const sora = Sora({ subsets: ["latin"], variable: "--font-sora" })
 
