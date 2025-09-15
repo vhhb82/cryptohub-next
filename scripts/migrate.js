@@ -80,12 +80,35 @@ async function main() {
           "platform" TEXT NOT NULL,
           "videoId" TEXT NOT NULL,
           "title" TEXT NOT NULL,
+          "titleEn" TEXT,
           "url" TEXT,
+          "source" TEXT,
           "published" BOOLEAN NOT NULL DEFAULT true,
           "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
         );
       `
       console.log('✅ Video table created')
+    } else {
+      // Check if we need to add missing columns
+      const columns = await prisma.$queryRaw`
+        SELECT column_name 
+        FROM information_schema.columns 
+        WHERE table_name = 'Video' 
+        AND table_schema = 'public'
+      `
+      
+      const columnNames = columns.map(c => c.column_name)
+      console.log('📋 Video table columns:', columnNames)
+      
+      if (!columnNames.includes('titleEn')) {
+        await prisma.$executeRaw`ALTER TABLE "Video" ADD COLUMN "titleEn" TEXT;`
+        console.log('✅ Added titleEn column to Video table')
+      }
+      
+      if (!columnNames.includes('source')) {
+        await prisma.$executeRaw`ALTER TABLE "Video" ADD COLUMN "source" TEXT;`
+        console.log('✅ Added source column to Video table')
+      }
     }
     
     console.log('🎉 Supabase database setup completed successfully')
