@@ -1,14 +1,14 @@
 import { NextResponse, NextRequest } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { client } from '@/lib/sanity'
 import { requireAuth } from '@/lib/auth'
 
 export async function DELETE(req: NextRequest, context: { params: { id: string } }) {
   const authError = requireAuth(req)
   if (authError) return authError
-  const idNum = Number(context.params.id)
-  if (!idNum) return NextResponse.json({ ok: false, error: 'ID invalid.' }, { status: 400 })
+  const id = context.params.id
+  if (!id) return NextResponse.json({ ok: false, error: 'ID invalid.' }, { status: 400 })
   try {
-    await prisma.news.delete({ where: { id: idNum } })
+    await client.delete(id)
     return NextResponse.redirect(new URL('/admin?deleted=1', process.env.SITE_URL || 'http://localhost:3000'))
   } catch (e) {
     console.error(e)

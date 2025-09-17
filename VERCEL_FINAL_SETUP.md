@@ -61,9 +61,10 @@ SUPABASE_BUCKET = uploads
 În Supabase → Storage → Policies pentru bucket-ul `uploads`:
 
 ```sql
--- Allow public read access
-CREATE POLICY "Public read access" ON storage.objects
-FOR SELECT USING (bucket_id = 'uploads');
+-- Allow public read a
+
+
+ccess
 
 -- Allow service role to manage files
 CREATE POLICY "Service role full access" ON storage.objects

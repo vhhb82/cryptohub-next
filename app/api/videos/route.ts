@@ -1,5 +1,5 @@
 import { NextResponse, NextRequest } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { client } from '@/lib/sanity'
 import { requireAuth } from '@/lib/auth'
 
 export async function POST(req: NextRequest) {
@@ -22,7 +22,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: 'Platforma trebuie să fie youtube sau tiktok.' }, { status: 400 })
     }
 
-    await prisma.video.create({ data: { platform, videoId, title, url: url || undefined, published } })
+    await client.create({
+      _type: 'video',
+      platform,
+      videoId,
+      title,
+      url: url || undefined,
+      published,
+    })
     return NextResponse.redirect(new URL('/admin?created=1', req.url))
   } catch (e) {
     console.error(e)

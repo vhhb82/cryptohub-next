@@ -1,4 +1,5 @@
 import Link from "next/link"
+import SanityImage from "./SanityImage"
 
 export default function NewsCard({
   href,
@@ -10,13 +11,21 @@ export default function NewsCard({
   href: string
   title: string
   excerpt?: string | null
-  image?: string | null
+  image?: any
   date: string | Date
 }) {
   const d = typeof date === "string" ? new Date(date) : date
   return (
     <article className="card hover:shadow-sm transition">
-      {image && <img src={image} alt={title} className="mb-3 w-full h-44 object-cover rounded-xl" />}
+      {image && (
+        <SanityImage 
+          image={image} 
+          alt={title} 
+          width={400}
+          height={176}
+          className="mb-3 w-full h-44 object-cover rounded-xl" 
+        />
+      )}
       <h3 className="text-lg font-semibold leading-snug">
         <Link href={href} className="hover:underline">{title}</Link>
       </h3>

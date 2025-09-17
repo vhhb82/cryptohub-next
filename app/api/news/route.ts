@@ -1,5 +1,5 @@
 import { NextResponse, NextRequest } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { client } from '@/lib/sanity'
 import { requireAuth } from '@/lib/auth'
 import slugify from 'slugify'
 
@@ -38,16 +38,67 @@ export async function POST(req: NextRequest) {
     const base = slugify(title, { lower: true, strict: true }) || 'stire'
     let slug = base
     let i = 1
-    while (await prisma.news.findUnique({ where: { slug } })) {
+    
+    // Check if slug exists in Sanity
+    while (await client.fetch(`*[_type == "news" && slug.current == "${slug}"][0]`)) {
       slug = `${base}-${i++}`
     }
 
-    await prisma.news.create({
-      data: {
-        title, excerpt: excerpt || undefined, content,
-        titleEn: titleEn || undefined, excerptEn: excerptEn || undefined, contentEn: contentEn || undefined,
-        image: image || undefined, published, slug
+    // Convert content to Sanity blocks format
+    const contentBlocks = [
+      {
+        _type: 'block',
+        _key: 'content-block',
+        style: 'normal',
+        children: [
+          {
+            _type: 'span',
+            _key: 'content-span',
+            text: content,
+            marks: []
+          }
+        ],
+        markDefs: []
       }
+    ]
+
+    const contentEnBlocks = contentEn ? [
+      {
+        _type: 'block',
+        _key: 'content-en-block',
+        style: 'normal',
+        children: [
+          {
+            _type: 'span',
+            _key: 'content-en-span',
+            text: contentEn,
+            marks: []
+          }
+        ],
+        markDefs: []
+      }
+    ] : undefined
+
+    await client.create({
+      _type: 'news',
+      title,
+      excerpt,
+      content: contentBlocks,
+      titleEn,
+      excerptEn,
+      contentEn: contentEnBlocks,
+      slug: {
+        _type: 'slug',
+        current: slug
+      },
+      mainImage: image ? {
+        _type: 'image',
+        asset: {
+          _type: 'reference',
+          _ref: image
+        }
+      } : undefined,
+      published,
     })
     return NextResponse.json({ success: true, redirect: '/admin?created=1' })
   } catch (e) {
